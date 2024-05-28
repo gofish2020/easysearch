@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"time"
+	"unicode/utf8"
 
 	"strings"
 
@@ -36,12 +37,14 @@ func DoSpider(limit int) {
 			if src.Md5 == "" {
 				src.Md5 = tools.GetMD5Hash(src.Url)
 			}
+			src.HtmlLen = 0
 			src.UpdatedAt = time.Now()
-			mysqlDB.Model(&src).Select("craw_done", "host", "md5", "html", "title", "updated_at").Updates(src)
+			mysqlDB.Model(&src).Select("craw_done", "host", "md5", "html", "html_len", "title", "updated_at").Updates(src)
 		} else {
 
 			src.CrawDone = "1"
 			src.Html = tools.StringStrip(strings.TrimSpace(doc.Text()))
+			src.HtmlLen = uint(utf8.RuneCountInString(src.Html))
 			src.Title = tools.StringStrip(strings.TrimSpace(doc.Find("title").Text()))
 			src.UpdatedAt = time.Now()
 			if src.Md5 == "" {
@@ -53,13 +56,13 @@ func DoSpider(limit int) {
 			}
 
 			// 爬取成功,更新数据库
-			res := mysqlDB.Model(&src).Select("craw_done", "html", "title", "update_at", "md5", "host").Updates(&src)
+			res := mysqlDB.Model(&src).Select("craw_done", "html", "html_len", "title", "update_at", "md5", "host").Updates(src)
 			if res.RowsAffected > 0 {
 				fmt.Println("已成功爬取", src.Url)
 			}
 
 			uniqueUrl := make(map[string]struct{}) // 当前页面中的a链接去重
-			// 解析html，从提取更多的a链接，保存到数据库
+			// 解析html，提取更多的a链接，保存到数据库
 			doc.Find("a").Each(func(i int, s *goquery.Selection) {
 				//
 				href := width.Narrow.String(strings.Trim(s.AttrOr("href", ""), " \n"))

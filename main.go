@@ -2,12 +2,11 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/gofish2020/easysearch/conf"
+	"github.com/gofish2020/easysearch/controllers"
 	"github.com/gofish2020/easysearch/db"
 	"github.com/gofish2020/easysearch/jieba"
 
@@ -16,6 +15,8 @@ import (
 
 func main() {
 
+	flag.Parse()
+	args := os.Args
 	//1. 初始化配置信息
 	conf.InitConf()
 
@@ -23,39 +24,24 @@ func main() {
 	db.InitDB()
 
 	//3. 初始化分词
-	jieba.InitJieba("/Users/mac/source/easysearch/jieba/dict")
-
-	flag.Parse()
-
-	args := os.Args
+	jieba.InitJieba("./jieba/dict") // path.Join(filepath.Dir(args[0]), "jieba/dict")
 
 	if len(args) > 1 {
-		switch strings.ToLower(args[1]) { // ./easysearch spider 10
+		switch strings.ToLower(args[1]) { // ./easysearch spider
 		case "spider": //爬取连接
-			limit := 100 // 限制一次处理的url数量
-			if len(args) > 2 {
-				v, _ := strconv.Atoi(string(args[2]))
-				if v > 0 {
-					limit = v
-				}
+			for i := 0; i < 5; i++ {
+				db.DoSpider(10)
 			}
-			db.DoSpider(limit)
-		case "dict": // ./easysearch dict 2
+		case "dict": // ./easysearch dict
 			//分词
-			limit := 2
-			if len(args) > 2 {
-				v, _ := strconv.Atoi(string(args[2]))
-				if v > 0 {
-					limit = v
-				}
+			for i := 0; i < 5; i++ {
+				db.DoDict(10)
 			}
-			db.DoDict(limit)
 
+			// 用定时任务一直执行
 			// c := cron.New(cron.WithSeconds())
 			// c.AddFunc("25 * * * * *", f)
-
 			// go c.Start()
-
 			//select {}
 
 		}
@@ -65,9 +51,8 @@ func main() {
 	//启动web服务，搜索结果
 
 	e := gin.Default()
-	e.GET("/", func(ctx *gin.Context) {
-		fmt.Println(ctx.Params)
-		ctx.JSON(200, gin.H{"message": "ok"})
-	})
+	e.LoadHTMLGlob("views/*")
+
+	e.GET("/", controllers.Search)
 	e.Run(":8080")
 }

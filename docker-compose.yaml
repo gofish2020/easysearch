@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # MySQL 服务配置 select host,user,plugin,authentication_string from mysql.user; 需要修改root的host 为 %，然后重启mysql,否则外部是连接不上mysql的
+  # MySQL 服务配置 进入docker内部，查询下 select host,user,plugin,authentication_string from mysql.user; 需要修改root的host 为 %，然后重启mysql,否则外部是连接不上mysql的
   mysql:
     image: mysql/mysql-server:8.0.28
     container_name: mysql

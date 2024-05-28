@@ -41,7 +41,7 @@ func DoDict(limit int) {
 	})
 	// 2.查询
 	var srcs []Source
-	mysqlDB.Model(&Source{}).Where("dict_done = ? and craw_done=1 and id > ?", 1, maxId).Limit(limit).Order("id asc").Find(&srcs)
+	mysqlDB.Model(&Source{}).Where("dict_done = ? and craw_done=1 and id > ?", 0, maxId).Limit(limit).Order("id asc").Find(&srcs)
 
 	batchUpdate := make(map[string]string)
 
@@ -101,7 +101,7 @@ func DoDict(limit int) {
 
 	}
 
-	// 批量更新 t_dict
+	// 开启一个新链接，批量更新 t_dict
 	mysqlDB.Connection(func(tx *gorm.DB) error {
 		tx.Exec("use " + DictDBName)
 
