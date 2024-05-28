@@ -15,7 +15,7 @@ import (
 const SpiderDBName = "spider"
 const DictDBName = "dictionary"
 
-const baseUrl = "https://www.zhihu.com"
+const baseUrl = "https://www.hao123.com/"
 
 var mysqlDB *gorm.DB
 

@@ -7,7 +7,7 @@ import (
 	"github.com/imroc/req/v3"
 )
 
-var client = req.C().SetTimeout(time.Second * 4).SetRedirectPolicy(req.SameDomainRedirectPolicy())
+var client = req.C().SetTimeout(time.Second * 4).SetRedirectPolicy(req.NoRedirectPolicy())
 
 // 爬取url，失败重试 reties 次数
 func queryUrl(url string, retries int) *goquery.Document {
